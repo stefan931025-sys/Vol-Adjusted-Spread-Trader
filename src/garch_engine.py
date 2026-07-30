@@ -6,7 +6,7 @@ class DynamicVolEngine:
     def __init__(self, spread: pd.Series):
         self.spread = spread
 
-    def forecast_conditional_volatility(() -> pd.Series:
+    def forecast_conditional_volatility(self) -> pd.Series:
         """Fits GARCH(1,1) model on spread log-changes to forecast daily conditional vol."""
         spread_diff = self.spread.diff().dropna() * 100  # Rescaled for numerical stability
         
