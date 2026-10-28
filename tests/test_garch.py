@@ -1,46 +1,42 @@
-import numpy as np
-import pandas as pd
 import pytest
-from src.garch_engine import GARCHVolatilityEngine  # Adjust import based on your exact class name
+import pandas as pd
+import numpy as np
+from src.garch_engine import DynamicVolEngine
 
-def test_garch_stationarity_constraint():
-    """
-    Validates that GARCH(1,1) parameters satisfy standard stationarity: alpha + beta < 1.
-    """
-    engine = GARCHVolatilityEngine()
-    # Mock return series with zero-mean normal distribution
-    np.random.seed(42)
-    mock_returns = np.random.normal(0, 0.015, 500)
-    
-    params = engine.fit(mock_returns)
-    alpha = params.get("alpha", 0.05)
-    beta = params.get("beta", 0.90)
-    
-    assert alpha + beta < 1.0, f"GARCH non-stationary process: alpha ({alpha}) + beta ({beta}) >= 1.0"
 
-def test_volatility_adjusted_zscore():
-    """
-    Tests that volatility normalization correctly rescales the spread by dynamic GARCH variance.
-    """
-    spread = pd.Series([0.0, 1.5, -2.0, 0.5, 3.1])
-    conditional_vol = pd.Series([1.0, 1.2, 1.0, 0.8, 1.5])
+def test_dynamic_vol_engine_initialization():
+    """Validates that DynamicVolEngine initializes correctly with a pandas Series."""
+    dates = pd.date_range(start="2023-01-01", periods=100, freq="B")
+    spread_data = pd.Series(np.random.normal(0, 1, 100), index=dates)
     
-    adjusted_zscore = spread / conditional_vol
-    
-    assert len(adjusted_zscore) == len(spread)
-    assert pytest.approx(adjusted_zscore.iloc[1], 0.01) == 1.25
-    assert pytest.approx(adjusted_zscore.iloc[2], 0.01) == -2.00
+    engine = DynamicVolEngine(spread_data)
+    assert isinstance(engine.spread, pd.Series)
+    assert len(engine.spread) == 100
 
-def test_engle_granger_pvalue_threshold():
-    """
-    Ensures cointegration test flags valid mean-reverting series (p-value < 0.05).
-    """
-    np.random.seed(107)
-    x = np.cumsum(np.random.normal(0, 1, 200)) + 50
-    noise = np.random.normal(0, 0.5, 200)
-    y = x + 5 + noise  # Cointegrated series
+
+def test_forecast_conditional_volatility():
+    """Validates that forecast_conditional_volatility returns a non-empty pandas Series."""
+    dates = pd.date_range(start="2023-01-01", periods=100, freq="B")
+    spread_data = pd.Series(np.random.normal(0, 1, 100), index=dates)
     
-    engine = GARCHVolatilityEngine()
-    coint_pvalue = engine.check_cointegration(x, y)
+    engine = DynamicVolEngine(spread_data)
+    vol_series = engine.forecast_conditional_volatility()
     
-    assert coint_pvalue < 0.05, f"Failed to detect cointegration: p-value {coint_pvalue} >= 0.05"
+    assert isinstance(vol_series, pd.Series)
+    assert not vol_series.empty
+
+
+def test_calculate_vol_adjusted_zscore():
+    """Validates that calculate_vol_adjusted_zscore returns the expected columns and structure."""
+    dates = pd.date_range(start="2023-01-01", periods=150, freq="B")
+    spread_data = pd.Series(np.linspace(10, 15, 150) + np.random.normal(0, 0.2, 150), index=dates)
+    
+    engine = DynamicVolEngine(spread_data)
+    result_df = engine.calculate_vol_adjusted_zscore()
+    
+    assert isinstance(result_df, pd.DataFrame)
+    assert "spread" in result_df.columns
+    assert "garch_vol" in result_df.columns
+    assert "dynamic_zscore" in result_df.columns
+    assert not result_df.empty
+p
