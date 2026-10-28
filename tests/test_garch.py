@@ -39,4 +39,3 @@ def test_calculate_vol_adjusted_zscore():
     assert "garch_vol" in result_df.columns
     assert "dynamic_zscore" in result_df.columns
     assert not result_df.empty
-p
