@@ -27,4 +27,4 @@ jobs:
 
     - name: Run Test Suite with Pytest
       run: |
-        PYTHONPATH=src pytest tests/ --doctest-modules --junitxml=junit/test-results.xml --cov-report=xml
+        PYTHONPATH=. pytest tests/ --doctest-modules --junitxml=junit/test-results.xml --cov-report=xml
