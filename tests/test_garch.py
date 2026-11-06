@@ -1,8 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.garch_engine import DynamicVolEngine
-
+from core.garch_engine import DynamicVolEngine
 
 def test_dynamic_vol_engine_initialization():
     """Validates that DynamicVolEngine initializes correctly with a pandas Series."""
@@ -12,7 +11,6 @@ def test_dynamic_vol_engine_initialization():
     engine = DynamicVolEngine(spread_data)
     assert isinstance(engine.spread, pd.Series)
     assert len(engine.spread) == 100
-
 
 def test_forecast_conditional_volatility():
     """Validates that forecast_conditional_volatility returns a non-empty pandas Series."""
@@ -24,7 +22,6 @@ def test_forecast_conditional_volatility():
     
     assert isinstance(vol_series, pd.Series)
     assert not vol_series.empty
-
 
 def test_calculate_vol_adjusted_zscore():
     """Validates that calculate_vol_adjusted_zscore returns the expected columns and structure."""
