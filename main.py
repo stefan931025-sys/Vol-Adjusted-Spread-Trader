@@ -1,14 +1,14 @@
 import yfinance as yf
 from tabulate import tabulate
-from src.cointegration import CointegrationEngine
-from src.garch_engine import DynamicVolEngine
-from src.execution_matrix import DiscretionaryExecutionMatrix
+from core.cointegration import CointegrationEngine
+from core.garch_engine import DynamicVolEngine
+from core.execution_matrix import DiscretionaryExecutionMatrix
 
 def run_pipeline(ticker_y: str, ticker_x: str, start_date: str = "2024-01-01"):
-    print(f"\n=======================================================")
-    print(f"  VOL-ADJUSTED DISCRETIONARY PAIRS TRADING DESK")
-    print(f"  Target Pair: {ticker_y} vs {ticker_x}")
-    print(f"=======================================================\n")
+    print("\n" + "="*50)
+    print(" VOL-ADJUSTED DISCRETIONARY PAIRS TRADING DESK")
+    print(f" Target Pair: {ticker_y} vs {ticker_x}")
+    print("="*50 + "\n")
 
     # 1. Fetch Data
     df = yf.download([ticker_y, ticker_x], start=start_date)['Close']
@@ -20,8 +20,8 @@ def run_pipeline(ticker_y: str, ticker_x: str, start_date: str = "2024-01-01"):
     coint_stats = coint_engine.check_stationarity()
 
     print(f"[*] Hedge Ratio (Beta): {beta:.4f}")
-    print(f"[*] Cointegration ADF p-value: {coint_stats['p_value']:.4f} "
-          f"({'PASS' if coint_stats['is_stationary'] else 'FAIL'})\n")
+    print(f"[*] Cointegration ADF p-value: {coint_stats['p_value']:.4f} -> "
+          f"{'PASS' if coint_stats['is_stationary'] else 'FAIL'}\n")
 
     # 3. Dynamic GARCH Volatility Engine
     vol_engine = DynamicVolEngine(coint_engine.spread)
